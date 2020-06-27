@@ -1,7 +1,8 @@
-#include "example2.mpl"
+;#macro switcher
+;#end
 
-bool BOOL = true
-
-unsigned long int UL = 123
-
-long float LF = 14.66
+#ifdef switcher
+bool AAA
+#else
+bool BBB
+#end

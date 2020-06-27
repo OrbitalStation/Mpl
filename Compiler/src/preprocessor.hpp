@@ -33,6 +33,129 @@ namespace mpl {
             --iterator;
         }
 
+        void pp_remove(TV_t::iterator &iterator, TV_t &tokens, std::vector <preprocess_macro> &macros,
+                       std::vector <preprocess_macro>::iterator &it2) {
+            tokens.erase(iterator);
+            if (iterator->type != user_identifier) exit(1);
+            for (it2 = macros.begin(); it2 != macros.end(); ++it2) {
+                if (it2->name == iterator->value) {
+                    macros.erase(it2);
+                    break;
+                }
+            }
+            tokens.erase(iterator);
+        }
+
+        void pp_include(TV_t::iterator &iterator, TV_t &tokens, std::string &temp, std::string &temp2,
+                        string_t filename, TV_t &tmp) {
+            tokens.erase(iterator);
+            if (iterator->type != double_quote) exit(1);
+            tokens.erase(iterator);
+            if (iterator->type != user_identifier) exit(1);
+            temp = filename;
+            for (auto it = temp.end() - 1; true; --it) {
+                if (*it == '/') break;
+                temp.erase(it);
+                if (it == temp.begin()) break;
+            }
+            temp.append(iterator->value);
+            tokens.erase(iterator);
+            if (iterator->type != double_quote) exit(1);
+            tokens.erase(iterator);
+            if (temp == filename) exit(1);
+            readfile(temp.c_str(), temp2);
+            uncommentate(temp2);
+            compressfile(temp2);
+            tokenize(temp2, tmp);
+            compress_tokens(tmp);
+            tokens.insert(iterator, tmp.begin(), tmp.end());
+            iterator = tokens.begin() - 1;
+        }
+
+        void pp_ifdef(TV_t &tokens, TV_t::iterator &iterator, std::vector <preprocess_macro> &macros,
+                      std::vector <preprocess_macro>::iterator &it2, bool &isFindM) {
+            tokens.erase(iterator);
+            if (iterator->type != user_identifier) exit(1);
+            for (it2 = macros.begin(), isFindM = false; it2 != macros.end(); ++it2) {
+                if (it2->name == iterator->value) {
+                    isFindM = true;
+                    break;
+                }
+            }
+            tokens.erase(iterator);
+            if (isFindM) {
+                for (; iterator->type != preprocessor_sharp || (iterator + 1)->value != "end"; ++iterator) {
+                    if (iterator == tokens.end()) exit(1);
+                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == "else") {
+                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                            if (iterator == tokens.end()) exit(1);
+                            tokens.erase(iterator);
+                        }
+                        break;
+                    }
+                }
+                tokens.erase(iterator, iterator + 2);
+                iterator = tokens.begin();
+            } else {
+                while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                    if (iterator == tokens.end()) exit(1);
+                    tokens.erase(iterator);
+                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == "else") {
+                        tokens.erase(iterator, iterator + 2);
+                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                            if (iterator == tokens.end()) exit(1);
+                            ++iterator;
+                        }
+                        break;
+                    }
+                }
+                tokens.erase(iterator, iterator + 2);
+                iterator = tokens.begin();
+            }
+        }
+
+        void pp_ifndef(TV_t &tokens, TV_t::iterator &iterator, std::vector <preprocess_macro> &macros,
+                      std::vector <preprocess_macro>::iterator &it2, bool &isFindM) {
+            tokens.erase(iterator);
+            if (iterator->type != user_identifier) exit(1);
+            for (it2 = macros.begin(), isFindM = false; it2 != macros.end(); ++it2) {
+                if (it2->name == iterator->value) {
+                    isFindM = true;
+                    break;
+                }
+            }
+            tokens.erase(iterator);
+            if (!isFindM) {
+                for (; iterator->type != preprocessor_sharp || (iterator + 1)->value != "end"; ++iterator) {
+                    if (iterator == tokens.end()) exit(1);
+                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == "else") {
+                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                            if (iterator == tokens.end()) exit(1);
+                            tokens.erase(iterator);
+                        }
+                        break;
+                    }
+                }
+                tokens.erase(iterator, iterator + 2);
+                iterator = tokens.begin();
+            } else {
+                while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                    if (iterator == tokens.end()) exit(1);
+                    tokens.erase(iterator);
+                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == "else") {
+                        tokens.erase(iterator, iterator + 2);
+                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                            if (iterator == tokens.end()) exit(1);
+                            ++iterator;
+                        }
+                        break;
+                    }
+                }
+                tokens.erase(iterator, iterator + 2);
+                iterator = tokens.begin();
+            }
+        }
+
     }
 
     void preprocess(TV_t &tokens, string_t filename) {
@@ -43,8 +166,12 @@ namespace mpl {
 
         std::string temp, temp2;
 
-        for (auto iterator = tokens.begin(); iterator != tokens.end(); ++iterator) {
+        TV_t tmp;
 
+        bool isFindM;
+
+        for (auto iterator = tokens.begin(); iterator != tokens.end(); ++iterator) {
+            
             if (iterator->type == preprocessor_sharp) {
                 tokens.erase(iterator);
                 if (iterator->type == newline) {
@@ -54,39 +181,13 @@ namespace mpl {
                     if (iterator->value == "macro") {
                         detail::pp_macro(iterator, tokens, macros, it2);
                     } else if (iterator->value == "remove") {
-                        tokens.erase(iterator);
-                        if (iterator->type != user_identifier) exit(1);
-                        for (it2 = macros.begin(); it2 != macros.end(); ++it2) {
-                            if (it2->name == iterator->value) {
-                                macros.erase(it2);
-                                break;
-                            }
-                        }
-                        tokens.erase(iterator);
+                        detail::pp_remove(iterator, tokens, macros, it2);
                     } else if (iterator->value == "include") {
-                        tokens.erase(iterator);
-                        if (iterator->type != double_quote) exit(1);
-                        tokens.erase(iterator);
-                        if (iterator->type != user_identifier) exit(1);
-                        temp = filename;
-                        for (auto it = temp.end() - 1; true; --it) {
-                            if (*it == '/') break;
-                            temp.erase(it);
-                            if (it == temp.begin()) break;
-                        }
-                        temp.append(iterator->value);
-                        tokens.erase(iterator);
-                        if (iterator->type != double_quote) exit(1);
-                        tokens.erase(iterator);
-                        if (temp == filename) exit(1);
-                        TV_t tmp;
-                        readfile(temp.c_str(), temp2);
-                        uncommentate(temp2);
-                        compressfile(temp2);
-                        tokenize(temp2, tmp);
-                        compress_tokens(tmp);
-                        tokens.insert(iterator, tmp.begin(), tmp.end());
-                        iterator = tokens.begin() - 1;
+                        detail::pp_include(iterator, tokens, temp, temp2, filename, tmp);
+                    } else if (iterator->value == "ifdef") {
+                        detail::pp_ifdef(tokens, iterator, macros, it2, isFindM);
+                    } else if (iterator->value == "ifndef") {
+                        detail::pp_ifndef(tokens, iterator, macros, it2, isFindM);
                     } else exit(1);
                 } else exit(1);
             } else {
