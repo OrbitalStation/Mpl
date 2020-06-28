@@ -141,6 +141,15 @@ std::ostream& operator << (std::ostream &out, const mpl::Token &token) {
 
 int main(int argc, char *argv[]) {
 
+    if (argc != 4) {
+        std::cerr << "Error number of arguments:\n\t"
+        << "First argument is path to file which compiler need to compile.\n\t"
+        << "Second argument is path to file which compiler will create and put into "
+        << "the compiled source.\n\tThird argument is path to config file.\n"
+        << "Please try again.";
+        return 1;
+    }
+
     mpl::configure(argv[3]);
 
     mpl::file_t file;

@@ -22,23 +22,20 @@ namespace mpl {
 
         std::string PPRemove;
 
-        void uncommentate_config(file_t &file) {
+        std::string print_source;
 
+        void uncommentate_config(file_t &file) {
             for (auto iterator = file.cbegin(); iterator != file.cend(); ++iterator) {
                 if (*iterator == '%' && *(iterator + 1) == '%') {
                     do file.erase(iterator);
                     while (*iterator != '\n');
                 }
             }
-
         }
 
         void configure_helper(file_t &file, string_t find, unsigned long int &pos) {
-
             if ((pos = file.find(find)) == file_t::npos) exit(1);
-
             file.erase(pos, strlen(find));
-
         }
 
         void configure_helper2(string_t find, std::string &what, file_t &file, unsigned long int &pos) {
@@ -95,6 +92,8 @@ namespace mpl {
         detail::configure_helper2("Preprocessor_Macro_End", detail::PPMacroEnd, file, pos);
 
         detail::configure_helper2("Preprocessor_Begin", detail::PPBegin, file, pos);
+
+        detail::configure_helper2("PrintSource", detail::print_source, file, pos);
 
         if (file.find_first_not_of("\n\t ") != file_t::npos) exit(1);
 

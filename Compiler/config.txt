@@ -48,3 +48,9 @@ endmacro
 
 Preprocessor_Remove:
 remove
+
+%% Set to 'true' if you want to print compiled source,
+%% without putting to file which you give in 'argv[2]',
+%% 'false' otherwise
+PrintSource:
+true

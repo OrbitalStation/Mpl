@@ -367,13 +367,12 @@ namespace mpl {
                     iterator, var_name, isFindCoincidence, type, end, constants);
         }
 
-        /*std::ofstream file(path);
-
-        file << data << '\n' << bss << '\n' << text << '\n';
-
-        file.close();*/
-
-        std::cout << data << '\n' << bss << '\n' << text;
+        if (detail::print_source == "true") std::cout << data << '\n' << bss << '\n' << text;
+        else if (detail::print_source == "false") {
+            std::ofstream file(path);
+            file << data << '\n' << bss << '\n' << text;
+            file.close();
+        } else exit(1);
 
     }
 
