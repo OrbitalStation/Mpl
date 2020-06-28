@@ -1,8 +1,8 @@
 ;#macro switcher
-;#end
+;#endmacro
 
 #ifdef switcher
 bool AAA
 #else
 bool BBB
-#end
+#endif

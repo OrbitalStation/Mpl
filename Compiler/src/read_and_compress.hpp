@@ -118,29 +118,3 @@ namespace mpl {
     }
 
 }
-
-/*                for (chk = 0, single_comment_check = true; chk < len; ++chk) {
-                    if (*(iterator + chk) != detail::single_comment[chk]) {
-                        single_comment_check = false;
-                        break;
-                    }
-                }
-                if (single_comment_check) {
-                    do file.erase(iterator);
-                    while (*iterator != '\n');
-*//*            if (*iterator == ';') {
-                if (*(iterator + 1) == '$') {
-                    file.erase(iterator, iterator + 2);
-                    if (file.empty()) exit(1);
-                    while (*iterator != '$' || *(iterator + 1) != ';') {
-                        file.erase(iterator);
-                        if (file.empty()) exit(1);
-                    }
-                    file.erase(iterator, iterator + 2);
-                } else {
-                    do file.erase(iterator);
-                    while (*iterator != '\n');
-                    file.erase(iterator--);
-                }
-            }*//*
-                }*/

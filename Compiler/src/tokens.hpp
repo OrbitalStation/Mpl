@@ -70,6 +70,8 @@ namespace mpl {
 
     namespace detail {
 
+        extern std::string PPBegin;
+
         bool get_next_word_helper(std::string &from, std::string &to, char &c, int(* const &func)(int), int(* const &func2)(int)) {
             if (func(c)) {
                 c = from[0];
@@ -96,8 +98,6 @@ namespace mpl {
             return false;
         }
 
-
-
         /* return true if read a number */
         bool get_next_word(std::string &from, std::string &to) {
 
@@ -105,8 +105,17 @@ namespace mpl {
 
             if (from.empty()) return false;
 
-            if (from[0] == '#' || from[0] == '\"') {
-                to.assign(1, from[0]);
+            for (unsigned int i = 0, len = PPBegin.length(); i < len; ++i) {
+                if (from[i] != PPBegin[i]) break;
+                else if (i == len - 1) {
+                    from.erase(0, len);
+                    to = PPBegin;
+                    return false;
+                }
+            }
+
+            if (from[0] == '\"') {
+                to.assign(1, '\"');
                 from.erase(0, 1);
                 return false;
             }
@@ -142,7 +151,7 @@ namespace mpl {
 
             if (detail::get_next_word(file, word)) {
                 tokens.emplace_back(var_number, word);
-            } else if (word == "#") {
+            } else if (word == detail::PPBegin) {
                 tokens.emplace_back(preprocessor_sharp);
             } else if (word == "int") {
                 tokens.emplace_back(_kw_int);

@@ -24,7 +24,7 @@ namespace mpl {
             macros.emplace_back(iterator->value);
             tokens.erase(iterator);
             if (iterator->type == newline) tokens.erase(iterator);
-            for (; iterator->type != preprocessor_sharp || (iterator + 1)->value != "end"; tokens.erase(iterator)) {
+            for (; iterator->type != preprocessor_sharp || (iterator + 1)->value != PPMacroEnd; tokens.erase(iterator)) {
                 if (iterator == tokens.end()) exit(1);
                 macros.back().tokens.emplace_back(iterator->type, iterator->value);
             }
@@ -84,10 +84,10 @@ namespace mpl {
             }
             tokens.erase(iterator);
             if (isFindM) {
-                for (; iterator->type != preprocessor_sharp || (iterator + 1)->value != "end"; ++iterator) {
+                for (; iterator->type != preprocessor_sharp || (iterator + 1)->value != PPIfdefEnd; ++iterator) {
                     if (iterator == tokens.end()) exit(1);
-                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == "else") {
-                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == PPIfdefElse) {
+                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != PPIfdefEnd) {
                             if (iterator == tokens.end()) exit(1);
                             tokens.erase(iterator);
                         }
@@ -97,12 +97,12 @@ namespace mpl {
                 tokens.erase(iterator, iterator + 2);
                 iterator = tokens.begin();
             } else {
-                while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                while (iterator->type != preprocessor_sharp || (iterator + 1)->value != PPIfdefEnd) {
                     if (iterator == tokens.end()) exit(1);
                     tokens.erase(iterator);
-                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == "else") {
+                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == PPIfdefElse) {
                         tokens.erase(iterator, iterator + 2);
-                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != PPIfdefEnd) {
                             if (iterator == tokens.end()) exit(1);
                             ++iterator;
                         }
@@ -126,10 +126,10 @@ namespace mpl {
             }
             tokens.erase(iterator);
             if (!isFindM) {
-                for (; iterator->type != preprocessor_sharp || (iterator + 1)->value != "end"; ++iterator) {
+                for (; iterator->type != preprocessor_sharp || (iterator + 1)->value != PPIfndefEnd; ++iterator) {
                     if (iterator == tokens.end()) exit(1);
-                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == "else") {
-                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == PPIfndefElse) {
+                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != PPIfndefEnd) {
                             if (iterator == tokens.end()) exit(1);
                             tokens.erase(iterator);
                         }
@@ -139,12 +139,12 @@ namespace mpl {
                 tokens.erase(iterator, iterator + 2);
                 iterator = tokens.begin();
             } else {
-                while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                while (iterator->type != preprocessor_sharp || (iterator + 1)->value != PPIfndefEnd) {
                     if (iterator == tokens.end()) exit(1);
                     tokens.erase(iterator);
-                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == "else") {
+                    if (iterator->type == preprocessor_sharp && (iterator + 1)->value == PPIfndefElse) {
                         tokens.erase(iterator, iterator + 2);
-                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != "end") {
+                        while (iterator->type != preprocessor_sharp || (iterator + 1)->value != PPIfndefEnd) {
                             if (iterator == tokens.end()) exit(1);
                             ++iterator;
                         }
@@ -178,15 +178,15 @@ namespace mpl {
                     tokens.erase(iterator);
                     continue;
                 } else if (iterator->type == user_identifier) {
-                    if (iterator->value == "macro") {
+                    if (iterator->value == detail::PPMacro) {
                         detail::pp_macro(iterator, tokens, macros, it2);
-                    } else if (iterator->value == "remove") {
+                    } else if (iterator->value == detail::PPRemove) {
                         detail::pp_remove(iterator, tokens, macros, it2);
-                    } else if (iterator->value == "include") {
+                    } else if (iterator->value == detail::PPInclude) {
                         detail::pp_include(iterator, tokens, temp, temp2, filename, tmp);
-                    } else if (iterator->value == "ifdef") {
+                    } else if (iterator->value == detail::PPIfdef) {
                         detail::pp_ifdef(tokens, iterator, macros, it2, isFindM);
-                    } else if (iterator->value == "ifndef") {
+                    } else if (iterator->value == detail::PPIfndef) {
                         detail::pp_ifndef(tokens, iterator, macros, it2, isFindM);
                     } else exit(1);
                 } else exit(1);

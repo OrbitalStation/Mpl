@@ -10,7 +10,41 @@ MultiCommentBegin:
 MultiCommentEnd:
 $;
 
-%% true if you want to compiler check single comments before
-%% multiple, false otherwise
+%% 'true' if you want to compiler check single comments before
+%% multiple, 'false' otherwise
 IsCheckSingleCommentBeforeMultiple:
 true
+
+%% Symbol(s) which you can use to begin preprocessors directives
+Preprocessor_Begin:
+#
+
+Preprocessor_Ifdef:
+ifdef
+
+Preprocessor_Ifdef_End:
+endif
+
+Preprocessor_Ifdef_Else:
+else
+
+Preprocessor_Ifndef:
+ifndef
+
+Preprocessor_Ifndef_End:
+endif
+
+Preprocessor_Ifndef_Else:
+else
+
+Preprocessor_Include:
+include
+
+Preprocessor_Macro:
+macro
+
+Preprocessor_Macro_End:
+endmacro
+
+Preprocessor_Remove:
+remove
