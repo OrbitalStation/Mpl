@@ -1,0 +1,16 @@
+%% Symbol(s) which you can use to comment 1 line
+SimpleComment:
+;
+
+%% Symbol(s) which you can you use to begin block of comment
+MultiCommentBegin:
+;$
+
+%% Symbol(s) which you can you use to end block of comment
+MultiCommentEnd:
+$;
+
+%% true if you want to compiler check single comments before
+%% multiple, false otherwise
+IsCheckSingleCommentBeforeMultiple:
+true

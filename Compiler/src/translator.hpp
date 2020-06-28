@@ -152,14 +152,7 @@ namespace mpl {
                 tokens.erase(iterator);
             } else exit(1);
         }
-/*        void assign_float_variable(TV_t::iterator &iterator, bool &isFindCoincidence, std::vector <name_and_type> &user_values,
-                                   Types &type, std::string &var_name) {
-            if (iterator->type == user_identifier) {
-                iterator->value.insert(0, "usr_");
-                if (!check_existing_name(isFindCoincidence, user_values, iterator->value, type)) return;
-                var_name = iterator->value;
-            }
-        }*/
+
         void assign_variable_float_helper(TV_t::iterator &iterator, std::string &text, std::vector <std::string> &constants,
                 bool &isFindCoincidence, std::vector <name_and_type> &user_values, Types &type, TV_t &tokens,
                 std::string &var_name, const std::string &asm_type) {
@@ -338,6 +331,10 @@ namespace mpl {
 
                 assign_variable(iterator, isFindCoincidence, var_name, (type = LongFloat), user_values,
                         tokens, text, end, constants);
+
+                if (iterator->type == keyword_return) {
+
+                }
 
             }
 

@@ -57,6 +57,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <cstring>
 
 namespace mpl {
 
@@ -81,8 +82,10 @@ namespace mpl {
 #include "src/tokens.hpp"
 #include "src/defines.hpp"
 #include "src/read_and_compress.hpp"
+#include "src/config.hpp"
 #include "src/translator.hpp"
 #include "src/preprocessor.hpp"
+
 
 std::ostream& operator << (std::ostream &out, const mpl::Token &token) {
 
@@ -129,12 +132,16 @@ std::ostream& operator << (std::ostream &out, const mpl::Token &token) {
             return (out << "[=]");
         case mpl::newline:
             return (out << "[newline]\n");
+        case mpl::keyword_return:
+            return (out << "[return]");
         default: return out;
     }
 
 }
 
 int main(int argc, char *argv[]) {
+
+    mpl::configure(argv[3]);
 
     mpl::file_t file;
 

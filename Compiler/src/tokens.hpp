@@ -38,6 +38,8 @@ namespace mpl {
 
         keyword_bool,
 
+        keyword_return,
+
         user_identifier,
 
         var_number,
@@ -166,6 +168,8 @@ namespace mpl {
                 tokens.emplace_back(double_quote);
             } else if (word.empty()) {
                 /* nothing */
+            } else if (word == "return") {
+                tokens.emplace_back(keyword_return);
             } else {
                 tokens.emplace_back(user_identifier, word);
             }
