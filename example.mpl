@@ -1,8 +1,2 @@
-;#macro switcher
-;#endmacro
-
-#ifdef switcher
-bool AAA
-#else
-bool BBB
-#endif
+bool VAL
+return 1123213

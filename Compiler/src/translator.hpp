@@ -243,7 +243,7 @@ namespace mpl {
     declare_new_variable(iterator, user_values, var_name, tokens, bss, text,\
     isFindCoincidence, isFindCoincidence, type, reserve, asm_type, reg, type2, end)
 
-        void handle_tokens_string(std::vector <name_and_type> &user_values, std::string &bss,
+        bool handle_tokens_string(std::vector <name_and_type> &user_values, std::string &bss,
                 std::string &data, std::string &text, TV_t &tokens, TV_t::iterator &iterator,
                 std::string &var_name, bool &isFindCoincidence, Types &type, char * &end,
                 std::vector <std::string> &constants) {
@@ -252,50 +252,50 @@ namespace mpl {
 
             while (iterator->type != newline) {
 
-                if (DeclareNewVariable(keyword_signed_int, "resw 1", "word", "ax", SignedInt)) return;
+                if (DeclareNewVariable(keyword_signed_int, "resw 1", "word", "ax", SignedInt)) return false;
 
                 /* This is using like 'isGoNext' in previous function */
                 if (!isFindCoincidence) continue;
 
-                if (DeclareNewVariable(keyword_unsigned_int, "resw 1", "word", "ax", UnsignedInt)) return;
+                if (DeclareNewVariable(keyword_unsigned_int, "resw 1", "word", "ax", UnsignedInt)) return false;
 
                 if (!isFindCoincidence) continue;
 
-                if (DeclareNewVariable(keyword_bool, "resb 1", "byte", "al", Bool)) return;
+                if (DeclareNewVariable(keyword_bool, "resb 1", "byte", "al", Bool)) return false;
 
                 if (!isFindCoincidence) continue;
 
-                if (DeclareNewVariable(keyword_signed_short_int, "resb 1", "byte", "al", SignedShortInt)) return;
+                if (DeclareNewVariable(keyword_signed_short_int, "resb 1", "byte", "al", SignedShortInt)) return false;
 
                 if (!isFindCoincidence) continue;
 
-                if (DeclareNewVariable(keyword_unsigned_short_int, "resb 1", "byte", "al", UnsignedShortInt)) return;
+                if (DeclareNewVariable(keyword_unsigned_short_int, "resb 1", "byte", "al", UnsignedShortInt)) return false;
 
                 if (!isFindCoincidence) continue;
 
-                if (DeclareNewVariable(keyword_signed_long_int, "resd 1", "dword", "eax", SignedLongInt)) return;
+                if (DeclareNewVariable(keyword_signed_long_int, "resd 1", "dword", "eax", SignedLongInt)) return false;
 
                 if (!isFindCoincidence) continue;
 
-                if (DeclareNewVariable(keyword_unsigned_long_int, "resd 1", "dword", "eax", UnsignedLongInt)) return;
+                if (DeclareNewVariable(keyword_unsigned_long_int, "resd 1", "dword", "eax", UnsignedLongInt)) return false;
 
                 if (!isFindCoincidence) continue;
 
-                if (DeclareNewVariable(keyword_signed_long_long_int, "resq 1", "qword", "rax", SignedLongLongInt)) return;
+                if (DeclareNewVariable(keyword_signed_long_long_int, "resq 1", "qword", "rax", SignedLongLongInt)) return false;
 
                 if (!isFindCoincidence) continue;
 
-                if (DeclareNewVariable(keyword_unsigned_long_long_int, "resq 1", "qword", "rax", UnsignedLongLongInt)) return;
+                if (DeclareNewVariable(keyword_unsigned_long_long_int, "resq 1", "qword", "rax", UnsignedLongLongInt)) return false;
 
                 if (!isFindCoincidence) continue;
 
                 if (declare_new_float_variable(tokens, constants, keyword_float, Float, iterator, isFindCoincidence, bss,
-                        var_name, "resd 1", isFindCoincidence, user_values, text, end, "dword")) return;
+                        var_name, "resd 1", isFindCoincidence, user_values, text, end, "dword")) return false;
 
                 if (!isFindCoincidence) continue;
 
                 if (declare_new_float_variable(tokens, constants, keyword_long_float, LongFloat, iterator, isFindCoincidence, bss,
-                                               var_name, "resq 1", isFindCoincidence, user_values, text, end, "qword")) return;
+                                               var_name, "resq 1", isFindCoincidence, user_values, text, end, "qword")) return false;
 
                 if (!isFindCoincidence) continue;
 
@@ -333,12 +333,16 @@ namespace mpl {
                         tokens, text, end, constants);
 
                 if (iterator->type == keyword_return) {
-
+                    tokens.erase(iterator);
+                    if (iterator->type != var_number) exit(1);
+                    return true;
                 }
 
             }
 
             tokens.erase(iterator);
+
+            return false;
 
         }
 
@@ -348,7 +352,7 @@ namespace mpl {
 
         std::string bss = "section .bss\n\t";
 
-        std::string text = "section .text\n\tglobal _start\n\n_start:\n\t";
+        std::string text1 = "section .text\n\tglobal _start:\n\n", text2 = "\n_start:\n\t";
 
         std::vector <detail::name_and_type> user_values;
 
@@ -356,21 +360,32 @@ namespace mpl {
 
         std::string var_name;
 
-        bool isFindCoincidence;
+        bool isFindCoincidence, isFindReturn = false;
 
         Types type;
 
         char *end = nullptr;
 
         while (!tokens.empty()) {
-            detail::handle_tokens_string(user_values, bss, data, text, tokens,
-                    iterator, var_name, isFindCoincidence, type, end, constants);
+            if (detail::handle_tokens_string(user_values, bss, data, text2, tokens,
+                                         iterator, var_name, isFindCoincidence, type, end, constants)) {
+                detail::check_number(SignedLongInt, iterator->value, end);
+                text1.append("_exit:\n\tmov eax, 1\n\tmov ebx, " + iterator->value + "\n\tint 0x80\n");
+                isFindReturn = true;
+                break;
+            }
         }
 
-        if (detail::print_source == "true") std::cout << data << '\n' << bss << '\n' << text;
+        if (!isFindReturn) {
+            text1.append("_exit:\n\tmov eax, 1\n\tmov ebx, 0\n\tint0x80\n");
+        }
+
+        text2.append("jmp _exit\n");
+
+        if (detail::print_source == "true") std::cout << data << '\n' << bss << '\n' << text1 << text2;
         else if (detail::print_source == "false") {
             std::ofstream file(path);
-            file << data << '\n' << bss << '\n' << text;
+            file << data << '\n' << bss << '\n' << text1 << text2;
             file.close();
         } else exit(1);
 
@@ -412,3 +427,5 @@ namespace mpl {
     }
 
 }
+
+#undef DeclareNewVariable
